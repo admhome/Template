@@ -1,16 +1,16 @@
 {
-    "name": "admhome/template",
-    "description": "Small template engine",
-	"version": "0.0.1",
+	"name": "admhome/template",
+	"description": "Small template engine",
+	"version": "1.0.0-stable",
 	"license": "MIT",
-    "authors": [
-        {
-            "name": "admhome",
-            "email": "admhome@ya.ru"
-        }
-    ],
-    "minimum-stability": "stable",
-    "require": {
+	"authors": [
+		{
+			"name": "admhome",
+			"email": "admhome@ya.ru"
+		}
+	],
+	"minimum-stability": "stable",
+	"require": {
 		"php": ">=5.4"
 	}
 }
