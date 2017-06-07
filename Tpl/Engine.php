@@ -3,9 +3,9 @@
 /*
  * main class
  */
-namespace Engine\Template;
+namespace Template;
 
-use \Engine\Template\Block;
+use \Template\Block;
 
 class Engine
 {
