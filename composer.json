@@ -9,7 +9,7 @@
 			"email": "admhome@ya.ru"
 		}
 	],
-	"minimum-stability": "stable",
+	"minimum-stability": "dev",
 	"require": {
 		"php": ">=5.4"
 	}
