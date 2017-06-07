@@ -1,14 +1,13 @@
-"repositories": [
-    {
-        "type": "package",
-        "package": {
-            "name": "admhome/Template",
-            "version": "dev-master",
-            "source": {
-                "url": "git://github.com/admhome/Template.git",
-                "type": "git",
-                "reference": "master"
-            }
+{
+    "name": "admhome/template",
+    "description": "Small template engine",
+    "authors": [
+        {
+            "name": "admhome",
+            "email": "admhome@ya.ru"
         }
-    }
-]
+    ],
+    "require": {
+		"php": "^5.6"
+	}
+}
