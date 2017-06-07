@@ -3,7 +3,7 @@
 /*
  * element class
  */
-namespace Engine\Template;
+namespace Template;
 
 class Block
 {
