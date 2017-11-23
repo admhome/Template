@@ -5,7 +5,7 @@
  */
 namespace Template;
 
-use \Template\Block;
+use Template\Block as Block;
 
 class Engine
 {
@@ -297,7 +297,7 @@ class Engine
 		}
 
 		/*
-		 * if we see an error like this: 'Indirect modification of overloaded property \Engine\Template\Block::$element_data has no effect in /.../class_template_engine.php on line ...'
+		 * if we see an error like this: 'Indirect modification of overloaded property Block::$element_data has no effect in /.../class_template_engine.php on line ...'
 		 * it mean thet we need modify magic __get method in class of element like 'public function &__get($var)'
 		 *
 		 * here we detect pre-last block, if its true - we need just add the last block of values
@@ -312,7 +312,7 @@ class Engine
 			}
 			else
 			{
-				return $block->{'element_data'}[$current_index]['children'][$current_block_name] = new \Engine\Template\Block($current_block_name, $array_of_defines);
+				return $block->{'element_data'}[$current_index]['children'][$current_block_name] = new Block($current_block_name, $array_of_defines);
 			}
 		}
 		else
@@ -381,7 +381,7 @@ class Engine
 				}
 				else
 				{
-					return $this->template_global_data['blocks'][$block_name] = new \Engine\Template\Block($block_name, $array_of_defines);
+					return $this->template_global_data['blocks'][$block_name] = new Block($block_name, $array_of_defines);
 				}
 			}
 		}
