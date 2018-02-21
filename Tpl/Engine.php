@@ -30,6 +30,10 @@ class Engine
 
 	const COMPILED_DIRECTORY = 'Compiled';
 
+	if (!empty($_config['current_dir'])) {
+		$this->dir_prefix = $_config['current_dir'];
+	}
+
 	public function __construct($_config)
 	{
 		$dir_to_template_files = $_config['tpl_dir'];
