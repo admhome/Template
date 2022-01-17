@@ -3,7 +3,7 @@
 Компактный шаблонизатор.
 
 
-######Переменная:
+### Переменная:
 Шаблон
 ```
 {PAGE_TITLE}
@@ -13,7 +13,7 @@
 $tpl->define_var('PAGE_TITLE', $page_title);
 ```
 
-######Условие:
+### Условие:
 Шаблон
 ```
 <!-- IF need_slider -->...<!-- ENDIF -->
@@ -23,7 +23,7 @@ $tpl->define_var('PAGE_TITLE', $page_title);
 $tpl->define_if('need_slider', true);
 ```
 
-######Блок:
+### Блок:
 Шаблон
 ```
 <!-- BLOCK site_main_slider_banners -->
@@ -37,7 +37,7 @@ $tpl->define_block('site_main_slider_banners', [
 ]);
 ```
 
-######Подключение другого шаблона:
+### Подключение другого шаблона:
 Шаблон
 ```
 <!-- INCLUDE calendar.inc.tpl -->
