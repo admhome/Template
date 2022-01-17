@@ -7,7 +7,7 @@ namespace Template;
 
 class Block
 {
-	private $element_data = array();
+	private $element_data = [];
 
 	public function __construct($block_name, $array_of_params, $parent = '', $child = '')
 	{
@@ -63,10 +63,8 @@ class Block
 	{
 		if (!empty($if_name))
 		{
-		{
 			$index = $this->get_current_block_index();
 			return $this->element_data[$index]['ifs'][$if_name] = (empty($if_condition) ? false : $if_condition);
-		}
 		}
 		else
 		{
@@ -109,5 +107,3 @@ class Block
 		return var_export($this, true);
 	}
 }
-
-?>

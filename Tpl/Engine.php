@@ -9,8 +9,10 @@ use Template\Block as Block;
 
 class Engine
 {
+	const COMPILED_DIRECTORY = 'Compiled';
+
 	private $template_content;
-	private $templates_directory;
+	protected $templates_directory;
 
 	private $dir_prefix = '';
 
@@ -21,24 +23,26 @@ class Engine
 	*/
 	public $tpl_global_addons;
 
-	private $template_global_data = array(
-		'vars' => array(),
-		'ifs' => array(),
-		'blocks' => array(),
-		'switches' => array()
-	);
-
-	const COMPILED_DIRECTORY = 'Compiled';
-
-	if (!empty($_config['current_dir'])) {
-		$this->dir_prefix = $_config['current_dir'];
-	}
+	private $template_global_data = [
+		'vars' => [],
+		'ifs' => [],
+		'blocks' => [],
+		'switches' => [],
+	];
 
 	public function __construct($_config)
 	{
+		if (!empty($_config['current_dir'])) {
+			$this->dir_prefix = $_config['current_dir'];
+		}
+
 		$dir_to_template_files = $_config['tpl_dir'];
 
-		$this->dir_prefix = $_SERVER['DOCUMENT_ROOT'];
+		if ($_config['is_absolute']) {
+			$this->dir_prefix = '';
+		} else {
+			$this->dir_prefix = $_SERVER['DOCUMENT_ROOT'];
+		}
 
 		if (empty($dir_to_template_files))
 		{
@@ -63,19 +67,15 @@ class Engine
 			/*
 			 * check existing Compiled folder and rules on it
 			 */
-			if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN')
-			{
-				// trigger_error('Check directory "' . $this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY . '"', E_USER_NOTICE);
-				if (!is_dir($this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY))
-				{
-					if (!mkdir($this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY, 0777))
-					{
-						trigger_error(__METHOD__ . ' -> __construct: no dir "' . self::COMPILED_DIRECTORY . '" into templates directory and script can\'t create it', E_USER_WARNING);
-						$this->__destruct();
-						return false;
-					}
-				}
-			}
+ 			if (!is_dir($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . self::COMPILED_DIRECTORY))
+ 			{
+ 				if (!mkdir($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . self::COMPILED_DIRECTORY, 0777))
+ 				{
+ 					trigger_error(__METHOD__ . ' -> __construct: no dir "' . self::COMPILED_DIRECTORY . '" into templates directory and script can\'t create it', E_USER_WARNING);
+ 					$this->__destruct();
+ 					return false;
+ 				}
+ 			}
 			return true;
 		}
 	}
@@ -136,7 +136,7 @@ class Engine
 		{
 			$var_name = $this->filter_string($var_name);
 
-			if (in_array(gettype($var_value), array('array', 'object', 'resource')))
+			if (in_array(gettype($var_value), ['array', 'object', 'resource']))
 			{
 				$var_value = $this->prepare_array($var_value);
 			}
@@ -329,22 +329,6 @@ class Engine
 
 			return $this->define_block_raw($block->{'element_data'}[$current_index]['children'][$next_block_name], $block_path, $array_of_defines);
 		}
-
-		/*
-		 * debug
-		 *
-		echo '<p>$block: <pre>'.var_export($block,true).'</pre></p>';
-		echo '<p>$current_index: <span>'.var_export($current_index,true).'</span></p>';
-		echo '<p>$block_path: <span>'.var_export($block_path,true).'</span></p>';
-		echo '<p>$array_of_defines: <pre>'.var_export($array_of_defines,true).'</pre></p>';
-
-		echo '<hr>' . PHP_EOL;
-
-		if ($current_index > 5)
-		{
-			die();
-		}
-		*/
 	}
 
 	public function define_block($block_name, $array_of_defines = array())
@@ -497,21 +481,18 @@ class Engine
 		$template_content = preg_replace('#<!-- BLOCK ([a-z0-9\-_]+) -->#is', '<?php if ( isset($this->template_global_data[\'blocks\'][\'\1\']) ) foreach ($this->template_global_data[\'blocks\'][\'\1\']->{\'element_data\'} as \$\1_key => \$\1) { ?>', $template_content);
 		$template_content = preg_replace('#<!-- IF ([a-z0-9\-_]+).([a-z0-9\-_]+) -->#is', '<?php if (isset($\1[\'ifs\'][\'\2\']) && $\1[\'ifs\'][\'\2\']) { ?>', $template_content);
 		$template_content = preg_replace('#\{([a-z0-9\-_]+).([a-z0-9\-_]+)\}#is', '<?php echo \$\1[\'vars\'][\'\2\']; ?>', $template_content);
-		
+
 		/*
 		 * start multi blocks tags
 		 */
-		$template_content = preg_replace_callback('#<!-- BLOCK ([a-z0-9\-_]+\.)+([a-z0-9\-_]+) -->#is', '\Engine\Template\Engine::multi_block_callback', $template_content);
-		$template_content = preg_replace_callback('#<!-- IF ([a-z0-9\-_]+\.)+([a-z0-9\-_]+) -->#is', '\Engine\Template\Engine::multi_block_if_callback', $template_content);
-		$template_content = preg_replace_callback('#\{([a-z0-9\-_]+\.)+([a-zA-Z0-9\-_]+)\}#is', '\Engine\Template\Engine::multi_block_vars_callback', $template_content);
+		$template_content = preg_replace_callback('#<!-- BLOCK ([a-z0-9\-_]+\.)+([a-z0-9\-_]+) -->#is', '\Template\Engine::multi_block_callback', $template_content);
+		$template_content = preg_replace_callback('#<!-- IF ([a-z0-9\-_]+\.)+([a-z0-9\-_]+) -->#is', '\Template\Engine::multi_block_if_callback', $template_content);
+		$template_content = preg_replace_callback('#\{([a-z0-9\-_]+\.)+([a-zA-Z0-9\-_]+)\}#is', '\Template\Engine::multi_block_vars_callback', $template_content);
 
 		/*
 		 * close and middle tags
 		 */
-		$template_content = str_replace(array(
-										'<!-- ENDBLOCK -->',
-										'<!-- ENDIF -->'
-							), '<?php } ?>', $template_content);
+		$template_content = str_replace(['<!-- ENDBLOCK -->', '<!-- ENDIF -->'], '<?php } ?>', $template_content);
 		/*
 		$template_content = str_replace('<!-- ENDCASE -->', '<?php break; ?>', $template_content);
 		$template_content = str_replace('<!-- ENDSWITCH -->', '<?php endswitch; ?>', $template_content);
@@ -539,24 +520,24 @@ class Engine
 		{
 			// condition for compile or recompile template
 			if (
-					!is_file($this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY . '/' . $template_name)
+					!is_file($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . self::COMPILED_DIRECTORY . DIRECTORY_SEPARATOR . $template_name)
 					||
-					!filesize($this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY . '/' . $template_name)
+					!filesize($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . self::COMPILED_DIRECTORY . DIRECTORY_SEPARATOR . $template_name)
 					||
 					(
-						filemtime($this->dir_prefix . $this->templates_directory . '/' . $template_name) > filemtime($this->dir_prefix . $this->templates_directory . '/Compiled/' . $template_name)
+						filemtime($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . $template_name) > filemtime($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . 'Compiled' . DIRECTORY_SEPARATOR . $template_name)
 					)
 				)
 			{
 				if (
-						is_readable($this->dir_prefix . $this->templates_directory . '/' . $template_name)
+						is_readable($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . $template_name)
 						&&
-						$template_content = file_get_contents($this->dir_prefix . $this->templates_directory . '/' . $template_name)
+						$template_content = file_get_contents($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . $template_name)
 					)
 				{
-					if (file_put_contents($this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY . '/' . $template_name, $this->compile($template_content)) === FALSE)
+					if (file_put_contents($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . self::COMPILED_DIRECTORY . DIRECTORY_SEPARATOR . $template_name, $this->compile($template_content)) === FALSE)
 					{
-						trigger_error(__METHOD__ . ' -> parse: can\'t create ' . self::COMPILED_DIRECTORY . ' template file "' . $template_name . '" in "' . $this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY . '/' . $template_name . '"', E_USER_WARNING);
+						trigger_error(__METHOD__ . ' -> parse: can\'t create ' . self::COMPILED_DIRECTORY . ' template file "' . $template_name . '" in "' . $this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . self::COMPILED_DIRECTORY . DIRECTORY_SEPARATOR . $template_name . '"', E_USER_WARNING);
 
 						return false;
 					}
@@ -579,14 +560,14 @@ class Engine
 			// let out compile template
 			if (empty($destination_mark))
 			{
-				include($this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY . '/' . $template_name);
+				include($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . self::COMPILED_DIRECTORY . DIRECTORY_SEPARATOR . $template_name);
 
 				return true;
 			}
 			else
 			{
 				ob_start();
-					include($this->dir_prefix . $this->templates_directory . '/' . self::COMPILED_DIRECTORY . '/' . $template_name);
+					include($this->dir_prefix . $this->templates_directory . DIRECTORY_SEPARATOR . self::COMPILED_DIRECTORY . DIRECTORY_SEPARATOR . $template_name);
 					$template_content = ob_get_contents();
 				ob_end_clean();
 
@@ -632,11 +613,9 @@ class Engine
 	{
 		return var_export($this, true);
 	}
-	
+
 	public function Dump()
 	{
 		return var_export($this, true);
 	}
 }
-
-?>
